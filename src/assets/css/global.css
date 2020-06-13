@@ -1,0 +1,9 @@
+/* 这是一个全局的样式表 */
+html,
+body,
+#app {
+  min-width:1366px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
