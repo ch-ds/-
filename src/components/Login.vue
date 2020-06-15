@@ -35,6 +35,24 @@
             >
           </el-input>
         </el-form-item>
+        <el-form-item prop="verifycode">
+          <el-row :gutter="20">
+            <el-col :span="15">
+              <el-input
+                v-model="LoginForm.verifycode"
+                placeholder="验证码"
+                prefix-icon="el-icon-s-grid"
+                maxlength="4"
+              ></el-input>
+            </el-col>
+            <el-col :span="9">
+              <Captcha
+                @click.native="refreshCode()"
+                :identifyCode="identifyCode"
+              ></Captcha>
+            </el-col>
+          </el-row>
+        </el-form-item>
         <el-form-item class="btns">
           <el-button
             type="primary"
@@ -51,15 +69,30 @@
 </template>
 
 <script>
+import Captcha from './captcha/Captcha.vue'
 export default {
   data () {
+    // 验证码校验规则
+    const validateVerifycode = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入验证码'))
+      } else if (value !== this.identifyCode) {
+        callback(new Error('验证码不正确!'))
+      } else {
+        callback()
+      }
+    }
     return {
       // 控制 密码框 的显示与隐藏
       pwdInputShow: false,
+      // 验证码
+      identifyCodes: '1234567890',
+      identifyCode: '',
       // 登录表单的数据绑定的 用户名 和 密码
       LoginForm: {
         username: '',
-        password: ''
+        password: '',
+        verifycode: ''
       },
       // 登录表单的验证规则对象
       LoginFormRules: {
@@ -70,6 +103,9 @@ export default {
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
           { min: 6, max: 15, message: '长度在 6 到 15 个字符', trigger: 'blur' }
+        ],
+        verifycode: [
+          { required: true, trigger: 'blur', validator: validateVerifycode }
         ]
       }
     }
@@ -85,7 +121,30 @@ export default {
         if (!valid) return false
         console.log('登录成功')
       })
+    },
+    // 随机数
+    randomNumber (min, max) {
+      return Math.floor(Math.random() * (max - min) + min)
+    },
+    makeCode (num) {
+      for (let i = 0; i < num; i++) {
+        this.identifyCode += this.identifyCodes[
+          this.randomNumber(0, this.identifyCodes.length)
+        ]
+      }
+    },
+    // 刷新验证码
+    refreshCode () {
+      this.identifyCode = ''
+      this.makeCode(4)
+      console.log(this.identifyCode)
     }
+  },
+  components: {
+    Captcha
+  },
+  mounted () {
+    this.refreshCode()
   }
 }
 </script>
@@ -95,13 +154,13 @@ export default {
   height: 100%;
   background-image: url('../assets/images/loginBgc.jpg');
   background-repeat: no-repeat;
-  background-size:100% 100%;
+  background-size: 100% 100%;
   background-attachment: fixed;
 }
 
 .login_box {
   width: 450px;
-  height: 300px;
+  height: 350px;
   position: absolute;
   left: 50%;
   top: 50%;
@@ -131,7 +190,11 @@ export default {
 
     .btns {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+
+      button {
+        width: 200px;
+      }
     }
   }
 }
