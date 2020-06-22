@@ -14,7 +14,7 @@ import axios from 'axios'
 import TreeTable from 'vue-table-with-tree-grid'
 
 // 配置 axios 的请求根路径
-axios.defaults.baseURL = 'http://10.111.0.206:11111'
+axios.defaults.baseURL = 'http://localhost:11111'
 Vue.prototype.$http = axios
 
 // 注册 tree-table 的依赖
