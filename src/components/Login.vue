@@ -16,6 +16,7 @@
             v-model="LoginForm.username"
             placeholder="用户名"
             prefix-icon="el-icon-user"
+            @keyup.enter.native="login()"
           ></el-input>
         </el-form-item>
         <el-form-item
@@ -26,6 +27,7 @@
             v-model="LoginForm.password"
             placeholder="密码"
             prefix-icon="el-icon-lock"
+            @keyup.enter.native="login()"
             :type="pwdInputShow ? 'type' : 'password' "
           >
             <img
@@ -43,6 +45,7 @@
                 placeholder="验证码"
                 prefix-icon="el-icon-s-grid"
                 maxlength="4"
+                @keyup.enter.native="login()"
               ></el-input>
             </el-col>
             <el-col :span="9">
@@ -71,7 +74,7 @@
 <script>
 import Captcha from './captcha/Captcha.vue'
 export default {
-  data () {
+  data() {
     // 验证码校验规则
     const validateVerifycode = (rule, value, callback) => {
       if (value === '') {
@@ -112,21 +115,25 @@ export default {
   },
   methods: {
     // 表单重置方法
-    resetLoginForm () {
+    resetLoginForm() {
       this.$refs.LoginFormRef.resetFields()
     },
     // 登录功能
-    login () {
-      this.$refs.LoginFormRef.validate(valid => {
+    login() {
+      this.$refs.LoginFormRef.validate(async valid => {
         if (!valid) return false
-        console.log('登录成功')
+        const { data: res } = await this.$http.post('/login', this.LoginForm)
+        // 登录成功
+        if (res.status !== 200) return this.$message.error('登录失败，账号或密码错误')
+        this.$message.success('登录成功')
+        this.$router.push('/home')
       })
     },
     // 随机数
-    randomNumber (min, max) {
+    randomNumber(min, max) {
       return Math.floor(Math.random() * (max - min) + min)
     },
-    makeCode (num) {
+    makeCode(num) {
       for (let i = 0; i < num; i++) {
         this.identifyCode += this.identifyCodes[
           this.randomNumber(0, this.identifyCodes.length)
@@ -134,16 +141,15 @@ export default {
       }
     },
     // 刷新验证码
-    refreshCode () {
+    refreshCode() {
       this.identifyCode = ''
       this.makeCode(4)
-      console.log(this.identifyCode)
     }
   },
   components: {
     Captcha
   },
-  mounted () {
+  mounted() {
     this.refreshCode()
   }
 }
